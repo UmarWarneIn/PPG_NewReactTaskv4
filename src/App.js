@@ -85,7 +85,6 @@ function App() {
               <td>{element.partsdescription}</td>
               <td>{element.TypeCode}</td>
               <td>{element.ProdCode}</td>
-              <td>{element.id}</td>
               <td>
                 {editId === element.PartNum ? (
                   <>
@@ -97,7 +96,7 @@ function App() {
                 )}
               </td>
               <td>
-                {editId !== element.id && (
+                {editId !== element.PartNum && (
                   <button className="edit-button" onClick={() => { setEditId(element.id); setEditTitle(element.partsdescription); }}>Edit</button>
                 )}
               </td>
