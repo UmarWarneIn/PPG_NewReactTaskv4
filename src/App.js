@@ -14,17 +14,22 @@ function App() {
   const fetchData = () => {
     const username = 'manager'; // Replace 'your_username' with your actual username
     const password = 'manager'; // Replace 'your_password' with your actual password
-
+  
     fetch('https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts', {
       headers: {
         Authorization: 'Basic ' + btoa(username + ':' + password)
       }
     })
-      .then(response => response.json())
-      .then(json => setData(json))
-      .catch(error => console.error('Error fetching data: ', error));
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(json => setData(json))
+    .catch(error => console.error('Error fetching data: ', error));
   };
-
+  
   const applyFilter = () => {
     fetchData();
     const filtered = data.filter(item => item.id.toString().includes(idFilter));
@@ -70,18 +75,22 @@ function App() {
             <th>Parts Description</th>
             <th>Class ID</th>
             <th>Type Code</th>
+            <th>ProdCode</th>
           </tr>
         </thead>
         <tbody>
           {data.map(element => (
-            <tr key={element.PartNum}>
-              <td>{element.userId}</td>
+            <tr key={element.Company}>
+              <td>{element.PartNum}</td>
+              <td>{element.partsdescription}</td>
+              <td>{element.TypeCode}</td>
+              <td>{element.ProdCode}</td>
               <td>{element.id}</td>
               <td>
-                {editId === element.id ? (
+                {editId === element.PartNum ? (
                   <>
                     <input className="edit-input" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                    <button className="save-button" onClick={() => saveEdit(element.id)}>Save</button>
+                    <button className="save-button" onClick={() => saveEdit(element.PartNum)}>Save</button>
                   </>
                 ) : (
                   element.partsdescription // Use partsdescription instead of title
