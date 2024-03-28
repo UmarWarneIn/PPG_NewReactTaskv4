@@ -1,110 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { useEffect, useState } from 'react';
 
 function App() {
-  const [data, setData] = useState([]);
-  const [idFilter, setIdFilter] = useState('');
-  const [editId, setEditId] = useState(null);
-  const [editTitle, setEditTitle] = useState('');
+  const [partData, setPartData] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchData();
+    const username = 'manager';
+    const password = 'manager';
+    const headers = new Headers({
+      'Authorization': 'Basic ' + btoa(username + ':' + password),
+      'Content-Type': 'application/json'
+    });
+
+    fetch('https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts', {
+      method: 'GET',
+      headers: headers,
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then(data => {
+        console.log({data})
+        if (Array.isArray(data)) {
+          setPartData({data});
+        } else {
+          setError('Data is not in the expected format.');
+        }
+      })
+      .catch(error => {
+        console.error('There was a problem with your fetch operation:', error);
+        setError('There was a problem fetching data from the server.');
+      });
   }, []);
 
-  const fetchData = () => {
-    const username = 'manager'; // Replace 'your_username' with your actual username
-    const password = 'manager'; // Replace 'your_password' with your actual password
-  
-    fetch('https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts', {
-      headers: {
-        Authorization: 'Basic ' + btoa(username + ':' + password)
-      }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(json => setData(json))
-    .catch(error => console.error('Error fetching data: ', error));
-  };
-  
-  const applyFilter = () => {
-    fetchData();
-    const filtered = data.filter(item => item.id.toString().includes(idFilter));
-    setData(filtered);
-  };
-
-  const resetFilter = () => {
-    fetchData();
-    setIdFilter('');
-  };
-
-  const saveEdit = (id) => {
-    const updatedData = data.map(item => {
-      if (item.id === id) {
-        return { ...item, partsdescription: editTitle }; // Update partsdescription instead of title
-      }
-      return item;
-    });
-    setData(updatedData);
-    setEditId(null);
-    setEditTitle('');
-  };
-
-  return (
-    <div className="App">
-      <h1>Fetch Details</h1>
-      <div className="search-container">
-        <input 
-          className="search-input"
-          type="text" 
-          placeholder="Filter by element ID" 
-          value={idFilter} 
-          onChange={(e) => setIdFilter(e.target.value)} 
-        />
-        <button className="search-button" onClick={applyFilter}>Search</button>
-        <button className="reset-button" onClick={resetFilter}>Reset</button>
+  if (error) {
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error}</p>
       </div>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Company</th>
-            <th>PartNum</th>
-            <th>Parts Description</th>
-            <th>Class ID</th>
-            <th>Type Code</th>
-            <th>ProdCode</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(element => (
-            <tr key={element.Company}>
-              <td>{element.PartNum}</td>
-              <td>{element.partsdescription}</td>
-              <td>{element.TypeCode}</td>
-              <td>{element.ProdCode}</td>
-              <td>
-                {editId === element.PartNum ? (
-                  <>
-                    <input className="edit-input" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                    <button className="save-button" onClick={() => saveEdit(element.PartNum)}>Save</button>
-                  </>
-                ) : (
-                  element.partsdescription // Use partsdescription instead of title
-                )}
-              </td>
-              <td>
-                {editId !== element.PartNum && (
-                  <button className="edit-button" onClick={() => { setEditId(element.id); setEditTitle(element.partsdescription); }}>Edit</button>
-                )}
-              </td>
-              <td>{element.body}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    );
+  }
+
+  console.log(partData)
+  return (
+    <div>
+      <h1>Fetch API Example</h1>
+      <ul>
+        {partData.map(part => (
+          <li key={part.id}>
+            <strong>Company:</strong> {part.Company ?? 'N/A'}<br />
+            <strong>PartNum:</strong> {part.partNum ?? 'N/A'}<br />
+            <strong>Parts Description:</strong> {part.partsDescription ?? 'N/A'}<br />
+            <strong>Class ID:</strong> {part.classId ?? 'N/A'}<br />
+            <strong>Type Code:</strong> {part.typeCode ?? 'N/A'}<br />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
