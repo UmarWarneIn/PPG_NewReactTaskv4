@@ -1,65 +1,108 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import './App.css';
 
 function App() {
-  const [partData, setPartData] = useState([]);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState([]);
+  const [idFilter, setIdFilter] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editTitle, setEditTitle] = useState('');
 
   useEffect(() => {
-    const username = 'manager';
-    const password = 'manager';
-    const headers = new Headers({
-      'Authorization': 'Basic ' + btoa(username + ':' + password),
-      'Content-Type': 'application/json'
-    });
-
-    fetch('https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts', {
-      method: 'GET',
-      headers: headers,
-    })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error('Network response was not ok.');
-      })
-      .then(data => {
-        console.log({data})
-        if (Array.isArray(data)) {
-          setPartData({data});
-        } else {
-          setError('Data is not in the expected format.');
-        }
-      })
-      .catch(error => {
-        console.error('There was a problem with your fetch operation:', error);
-        setError('There was a problem fetching data from the server.');
-      });
+    fetchData();
   }, []);
 
-  if (error) {
-    return (
-      <div>
-        <h1>Error</h1>
-        <p>{error}</p>
-      </div>
-    );
-  }
+  const fetchData = () => {
+    const username = 'manager'; // Replace 'your_username' with your actual username
+    const password = 'manager'; // Replace 'your_password' with your actual password
 
-  console.log(partData)
+    fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts?filter=${idFilter}`, {
+      headers: {
+        Authorization: 'Basic ' + btoa(username + ':' + password)
+      }
+    })
+      .then(response => response.json())
+      .then(json => setData(json))
+      .catch(error => console.error('Error fetching data: ', error));
+  };
+
+  const saveEdit = (id) => {
+    const username = 'manager'; // Replace 'your_username' with your actual username
+    const password = 'manager'; // Replace 'your_password' with your actual password
+
+    fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts/${id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Basic ' + btoa(username + ':' + password)
+      },
+      body: JSON.stringify({ partsdescription: editTitle })
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to update');
+        }
+        // Assuming successful update, update local state
+        const updatedData = data.map(item => {
+          if (item.id === id) {
+            return { ...item, partsdescription: editTitle };
+          }
+          return item;
+        });
+        setData(updatedData);
+        setEditId(null);
+        setEditTitle('');
+      })
+      .catch(error => console.error('Error updating data: ', error));
+  };
+
   return (
-    <div>
-      <h1>Fetch API Example</h1>
-      <ul>
-        {partData.map(part => (
-          <li key={part.id}>
-            <strong>Company:</strong> {part.Company ?? 'N/A'}<br />
-            <strong>PartNum:</strong> {part.partNum ?? 'N/A'}<br />
-            <strong>Parts Description:</strong> {part.partsDescription ?? 'N/A'}<br />
-            <strong>Class ID:</strong> {part.classId ?? 'N/A'}<br />
-            <strong>Type Code:</strong> {part.typeCode ?? 'N/A'}<br />
-          </li>
-        ))}
-      </ul>
+    <div className="App">
+      <h1>Fetch Details</h1>
+      <div className="search-container">
+        <input 
+          className="search-input"
+          type="text" 
+          placeholder="Filter by element ID" 
+          value={idFilter} 
+          onChange={(e) => setIdFilter(e.target.value)} 
+        />
+        <button className="search-button" onClick={fetchData}>Search</button>
+      </div>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>PartNum</th>
+            <th>Parts Description</th>
+            <th>Class ID</th>
+            <th>Type Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map(element => (
+            <tr key={element.PartNum}>
+              <td>{element.userId}</td>
+              <td>{element.id}</td>
+              <td>
+                {editId === element.id ? (
+                  <>
+                    <input className="edit-input" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                    <button className="save-button" onClick={() => saveEdit(element.id)}>Save</button>
+                  </>
+                ) : (
+                  element.partsdescription // Use partsdescription instead of title
+                )}
+              </td>
+              <td>
+                {editId !== element.id && (
+                  <button className="edit-button" onClick={() => { setEditId(element.id); setEditTitle(element.partsdescription); }}>Edit</button>
+                )}
+              </td>
+              <td>{element.body}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
