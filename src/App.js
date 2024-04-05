@@ -15,13 +15,13 @@ function App() {
     const username = 'manager'; // Replace 'your_username' with your actual username
     const password = 'manager'; // Replace 'your_password' with your actual password
 
-    fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts?filter=${idFilter}`, {
+    fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts`, {
       headers: {
         Authorization: 'Basic ' + btoa(username + ':' + password)
       }
     })
       .then(response => response.json())
-      .then(json => setData(json))
+      .then(json =>setData(json.value) )
       .catch(error => console.error('Error fetching data: ', error));
   };
 
@@ -68,7 +68,7 @@ function App() {
         />
         <button className="search-button" onClick={fetchData}>Search</button>
       </div>
-      <table className="data-table">
+            <table className="data-table">
         <thead>
           <tr>
             <th>Company</th>
@@ -81,8 +81,8 @@ function App() {
         <tbody>
           {data.map(element => (
             <tr key={element.PartNum}>
-              <td>{element.userId}</td>
-              <td>{element.id}</td>
+              <td>{element.Company}</td>
+              <td>{element.PartNum}</td>
               <td>
                 {editId === element.id ? (
                   <>
@@ -90,7 +90,7 @@ function App() {
                     <button className="save-button" onClick={() => saveEdit(element.id)}>Save</button>
                   </>
                 ) : (
-                  element.partsdescription // Use partsdescription instead of title
+                  element.PartDescription // Use partsdescription instead of title
                 )}
               </td>
               <td>
@@ -98,9 +98,9 @@ function App() {
                   <button className="edit-button" onClick={() => { setEditId(element.id); setEditTitle(element.partsdescription); }}>Edit</button>
                 )}
               </td>
-              <td>{element.body}</td>
+              <td>{element.TypeCode}</td>
             </tr>
-          ))}
+          ))}           
         </tbody>
       </table>
     </div>
