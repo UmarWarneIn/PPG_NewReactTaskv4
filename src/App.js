@@ -47,7 +47,7 @@ function App() {
     const password = 'manager'; // Replace 'your_password' with your actual password
 
     fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts/${PartNum}`, {
-      method: 'PATCH', // Corrected method to PATCH
+      method: 'PATCH', 
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Basic ' + btoa(username + ':' + password)
@@ -60,7 +60,7 @@ function App() {
           setData(updatedData);
           setEditId(null);
         } else {
-          setMessage('Failed to save data');
+          //setMessage('Failed to save data');
           throw new Error('Failed to save data');
         }
       })
