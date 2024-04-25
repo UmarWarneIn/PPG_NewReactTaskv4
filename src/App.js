@@ -36,31 +36,40 @@ function App() {
   };
 
   const saveEdit = (PartNum) => {
-    const updatedData = data.map(part => {
-      if (part.PartNum === PartNum) {
-        return { ...part, PartDescription: editTitle };
-      }
-      return part;
-    });
+    const editedPart = data.find(part => part.PartNum === PartNum); // Find the part being edited
+
+    // Construct newPart object dynamically with Company, PartNum, and updated PartDescription
+    const newPart = {
+      "ds": {
+        "Part": [
+          {
+            "Company": editedPart.Company,
+            "PartNum": editedPart.PartNum,
+            "PartDescription": editTitle // Use the updated description from state
+          }
+        ]
+      },
+      "continueProcessingOnError": true,
+      "rollbackParentOnChildError": true
+    };
 
     const username = 'manager'; // Replace 'your_username' with your actual username
     const password = 'manager'; // Replace 'your_password' with your actual password
 
-    fetch(`https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/Parts/${PartNum}`, {
-      method: 'PATCH', 
+    fetch('https://77.92.189.102/iit_vertical_precast/api/v1/Erp.BO.PartSvc/UpdateExt', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: 'Basic ' + btoa(username + ':' + password)
       },
-      body: JSON.stringify({ PartDescription: editTitle })
+      body: JSON.stringify(newPart)
     })
       .then(response => {
         if (response.ok) {
           setMessage('Data saved successfully');
-          setData(updatedData);
+          fetchData(); // Fetch data again to update the table with the newly created part
           setEditId(null);
         } else {
-          //setMessage('Failed to save data');
           throw new Error('Failed to save data');
         }
       })
@@ -131,7 +140,7 @@ function App() {
                     className="edit-button"
                     onClick={() => {
                       setEditId(element.PartNum);
-                      setEditTitle(element.PartDescription);
+                      setEditTitle(element.PartDescription); 
                     }}
                   >
                     Edit
